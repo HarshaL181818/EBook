@@ -23,7 +23,7 @@ const Cart = () => {
 
   // Handle increase function
   const handleIncrease = (item) => {
-    fetch(`${API_BASE_URL}/cart-option/${item._id}`, {
+    fetch(`http://52.200.115.42:5000/cart-option/${item._id}`, {
       method: "PUT",
       headers: {
         "content-type": "application/json; charset=UTF-8"
@@ -49,7 +49,7 @@ const Cart = () => {
   // Handle decrease function
   const handleDecrease = (item) => {
     if (item.quantity > 1) {
-      fetch(`${API_BASE_URL}/cart-option/${item._id}`, {
+      fetch(`http://52.200.115.42:5000/cart-option/${item._id}`, {
         method: "PUT",
         headers: {
           "content-type": "application/json; charset=UTF-8"
@@ -94,7 +94,7 @@ const Cart = () => {
       confirmButtonText: "Yes, delete it!"
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch(`${API_BASE_URL}/cart-option/${item._id}`, {
+        fetch(`http://52.200.115.42:5000/cart-option/${item._id}`, {
           method: "DELETE"
         }).then(res => res.json()).then(data => {
           if (data.deletedCount > 0) {

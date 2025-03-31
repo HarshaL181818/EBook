@@ -53,7 +53,7 @@ const EditBooks = () => {
 
       //console.log(bookObj)
       //update book data
-      fetch(`${API_BASE_URL}/book/${id}`, {
+      fetch(`http://52.200.115.42:5000/book/${id}`, {
         method:"PATCH",
         headers: {
           "Content-Type": "application/json"

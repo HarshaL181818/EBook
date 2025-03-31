@@ -6,13 +6,13 @@ import API_BASE_URL from '../config';
 const ManageBooks = () => {
   const [allBooks, setAllBooks] = useState([]);
   useEffect( () => {
-    fetch("${API_BASE_URL}/all-books").then(res => res.json()).then(data => setAllBooks(data));
+    fetch("http://52.200.115.42:5000/all-books").then(res => res.json()).then(data => setAllBooks(data));
   }, [])
 
   // delete a book
   const handleDelete = (id) =>{
     console.log(id);
-    fetch(`${API_BASE_URL}/book/${id}`, {
+    fetch(`http://52.200.115.42:5000/book/${id}`, {
       method: "DELETE",
     }).then(res => res.json()).then(data => {
       alert("Book is deleted successfully!") 

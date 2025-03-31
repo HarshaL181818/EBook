@@ -36,7 +36,7 @@ const handleAddtoCart = (book) =>{
   if(user && user?.email){
     const cartItm = {bookId: book._id, bookTitle: book.bookTitle, quantity: 1, imageURL: book.imageURL, price: 10, email: user.email};
     //console.log(cartItm)
-    fetch("${API_BASE_URL}/cart-option", {
+    fetch("http://52.200.115.42:5000/cart-option", {
       method: "POST",
       headers: {
         'content-type': 'application/json'

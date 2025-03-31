@@ -6,7 +6,7 @@ const OtherBooks = () => {
     const [books, setBooks] = useState([]);
 
     useEffect( () => {
-        fetch("${API_BASE_URL}/all-books").then(res => res.json()).then(data => setBooks(data.slice(0,8)))
+        fetch("http://52.200.115.42:5000/all-books").then(res => res.json()).then(data => setBooks(data.slice(0,8)))
     }, [])
   return (
     <div>

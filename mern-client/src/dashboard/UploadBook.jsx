@@ -46,7 +46,7 @@ const UploadBook = () => {
       }
       console.log(bookObj)
       // send data to db
-      fetch("${API_BASE_URL}/upload-book",{
+      fetch("http://52.200.115.42:5000/upload-book",{
         method: "POST",
         headers: {
           "Content-Type": "application/json",
