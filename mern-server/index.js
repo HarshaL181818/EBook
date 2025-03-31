@@ -4,10 +4,11 @@ const stripe = require("stripe")('sk_test_51QBMSXBuaLd4buQ1B9RhgJ6xznN3qpwNLa8u6
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 const app = express();
-const PORT = 5000; // Backend API Port
+const PORT = 5000; // API Port
+const PUBLIC_IP = "52.200.115.42"; // Set your public IP
 
-app.use(cors());
-app.use(express.json());
+app.use(cors({ origin: "*" })); // Allow all origins
+app.use(express.json()); // Enable JSON parsing
 
 // MongoDB Connection
 const uri = "mongodb+srv://mern-book-store:ThgW0Ek4kJe1X5HS@cluster0.6jpld.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
@@ -22,7 +23,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     await client.connect();
-    console.log("Connected to MongoDB");
+    console.log("✅ Connected to MongoDB");
 
     const bookCollections = client.db("BookInventory").collection("books");
     const cartCollections = client.db("BookInventory").collection("cart");
@@ -72,11 +73,14 @@ async function run() {
       res.send(result);
     });
 
-    console.log("All routes are set up!");
+    console.log("✅ All routes are set up!");
   } catch (error) {
-    console.error(error);
+    console.error("❌ Error starting the server:", error);
   }
 }
 run();
 
-app.listen(PORT, () => console.log(`✅ API Server running at http://localhost:${PORT}`));
+// Start the Server on Public IP
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ API Server running at http://${PUBLIC_IP}:${PORT}`);
+});
