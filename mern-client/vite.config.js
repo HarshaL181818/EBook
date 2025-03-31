@@ -11,10 +11,11 @@ export default defineConfig({
 
     // ✅ Proxy API requests to backend server
     proxy: {
-      '/api': {
-        target: 'http://52.200.115.42:5000', // Replace with your public IP
+      "/api": {
+        target: "http://52.200.115.42:5000", // Your backend
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ""), // Removes `/api` prefix
       }
     }
   }
