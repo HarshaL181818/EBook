@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import BookCards from '../components/BookCards';
+import API_BASE_URL from '../config';
 
 const SearchResults = () => {
   const [books, setBooks] = useState([]);
@@ -9,7 +10,7 @@ const SearchResults = () => {
 
   useEffect(() => {
     const fetchBooks = async () => {
-      const response = await fetch(`http://localhost:5000/all-books?search=${query}`);
+      const response = await fetch(`${API_BASE_URL}/all-books?search=${query}`);
       const data = await response.json();
       setBooks(data);
     };

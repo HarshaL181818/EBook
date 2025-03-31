@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useLoaderData, useParams } from 'react-router-dom'
 import { Button, Checkbox, Label, Select, Textarea, TextInput } from "flowbite-react";
+import API_BASE_URL from '../config';
 
 const EditBooks = () => {
   const {id} = useParams();
@@ -42,6 +43,7 @@ const EditBooks = () => {
       const authorName = form.authorName.value;
       const imageURL = form.imageURL.value;
       const category = form.categoryName.value;
+      
       const bookDescription = form.bookDescription.value;
       const bookPDFURL = form.bookPDFURL.value;
       
@@ -51,7 +53,7 @@ const EditBooks = () => {
 
       //console.log(bookObj)
       //update book data
-      fetch(`api/book/${id}`, {
+      fetch(`${API_BASE_URL}/book/${id}`, {
         method:"PATCH",
         headers: {
           "Content-Type": "application/json"

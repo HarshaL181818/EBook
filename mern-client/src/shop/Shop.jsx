@@ -3,6 +3,7 @@ import { Card } from "flowbite-react";
 import { AuthContext } from '../contects/AuthProvider';
 import Swal from 'sweetalert2';
 import { useNavigate, useLocation } from 'react-router-dom';
+import API_BASE_URL from '../config';
 
 const Shop = () => {
   const [books, setBooks] = useState([]);
@@ -11,7 +12,7 @@ const Shop = () => {
   const location = useLocation();
 
   useEffect(() => {
-    fetch("http://localhost:5000/all-books")
+    fetch("${API_BASE_URL}/all-books")
       .then(res => res.json())
       .then(data => setBooks(data));
   }, []);
@@ -21,7 +22,7 @@ const Shop = () => {
     if (user && user?.email) {
       const cartItm = { bookId: book._id, bookTitle: book.bookTitle, quantity: 1, imageURL: book.imageURL, price: 10, email: user.email };
 
-      fetch("http://localhost:5000/cart-option", {
+      fetch("`${API_BASE_URL}/cart-option", {
         method: "POST",
         headers: {
           'content-type': 'application/json'

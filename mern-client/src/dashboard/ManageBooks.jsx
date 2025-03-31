@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react'
 import { Table } from "flowbite-react";
 import { Link } from 'react-router-dom';
-
+import API_BASE_URL from '../config';
 
 const ManageBooks = () => {
   const [allBooks, setAllBooks] = useState([]);
   useEffect( () => {
-    fetch("/api/all-books").then(res => res.json()).then(data => setAllBooks(data));
+    fetch("${API_BASE_URL}/all-books").then(res => res.json()).then(data => setAllBooks(data));
   }, [])
 
   // delete a book
   const handleDelete = (id) =>{
     console.log(id);
-    fetch(`api/book/${id}`, {
+    fetch(`${API_BASE_URL}/book/${id}`, {
       method: "DELETE",
     }).then(res => res.json()).then(data => {
       alert("Book is deleted successfully!") 

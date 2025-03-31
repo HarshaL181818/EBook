@@ -4,6 +4,7 @@ import { FaTrash } from 'react-icons/fa6';
 import Swal from 'sweetalert2';
 import { AuthContext } from '../contects/AuthProvider';
 //import { Link } from 'react-router-dom';
+import API_BASE_URL from '../config';
 
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -22,7 +23,7 @@ const Cart = () => {
 
   // Handle increase function
   const handleIncrease = (item) => {
-    fetch(`http://localhost:5000/cart-option/${item._id}`, {
+    fetch(`${API_BASE_URL}/cart-option/${item._id}`, {
       method: "PUT",
       headers: {
         "content-type": "application/json; charset=UTF-8"
@@ -48,7 +49,7 @@ const Cart = () => {
   // Handle decrease function
   const handleDecrease = (item) => {
     if (item.quantity > 1) {
-      fetch(`http://localhost:5000/cart-option/${item._id}`, {
+      fetch(`${API_BASE_URL}/cart-option/${item._id}`, {
         method: "PUT",
         headers: {
           "content-type": "application/json; charset=UTF-8"
@@ -93,7 +94,7 @@ const Cart = () => {
       confirmButtonText: "Yes, delete it!"
     }).then((result) => {
       if (result.isConfirmed) {
-        fetch(`http://localhost:5000/cart-option/${item._id}`, {
+        fetch(`${API_BASE_URL}/cart-option/${item._id}`, {
           method: "DELETE"
         }).then(res => res.json()).then(data => {
           if (data.deletedCount > 0) {

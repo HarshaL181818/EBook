@@ -5,6 +5,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/pagination';
+import API_BASE_URL from '../config';
 
 //import './styles.css';
 
@@ -35,7 +36,7 @@ const handleAddtoCart = (book) =>{
   if(user && user?.email){
     const cartItm = {bookId: book._id, bookTitle: book.bookTitle, quantity: 1, imageURL: book.imageURL, price: 10, email: user.email};
     //console.log(cartItm)
-    fetch("http://localhost:5000/cart-option", {
+    fetch("${API_BASE_URL}/cart-option", {
       method: "POST",
       headers: {
         'content-type': 'application/json'

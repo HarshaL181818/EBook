@@ -3,6 +3,7 @@ import {
     RouterProvider,
     useParams,
   } from "react-router-dom";
+  import API_BASE_URL from '../config';
 import App from "../App";
 import Home from "../home/Home";
 import Shop from "../shop/Shop";
@@ -56,7 +57,7 @@ import SearchResults from "../components/SearchResults";
         },{
             path: "/book/:id",
             element: <SingleBook/>,
-            loader: ({params}) => fetch(`http://localhost:5000/book/${params.id}`)
+            loader: ({params}) => fetch(`${API_BASE_URL}/book/${params.id}`)
         }
       ]
     },
@@ -80,7 +81,7 @@ import SearchResults from "../components/SearchResults";
         {
           path: "/admin/dashboard/edit-books/:id",
           element: <EditBooks/>,
-          loader: ({params}) => fetch(`http://localhost:5000/book/${params.id}`)
+          loader: ({params}) => fetch(`${API_BASE_URL}/book/${params.id}`)
         }
       ]
     },{
