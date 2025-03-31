@@ -1,6 +1,8 @@
 const express = require('express')
 const app = express()
 const port = process.env.PORT || 5000;
+const SERVER_URL = "http://52.200.115.42:5000";
+
 const cors = require('cors');
 const stripe = require("stripe")('sk_test_51QBMSXBuaLd4buQ1B9RhgJ6xznN3qpwNLa8u6i45kOMpQF0xK33aNTsUv0SuHOQdegjh6hhwkjd27lPmivJVf4ON004HeEAvSm');
 
