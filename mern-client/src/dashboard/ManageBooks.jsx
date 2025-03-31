@@ -12,7 +12,7 @@ const ManageBooks = () => {
   // delete a book
   const handleDelete = (id) =>{
     console.log(id);
-    fetch(`http://localhost:5000/book/${id}`, {
+    fetch(`api/book/${id}`, {
       method: "DELETE",
     }).then(res => res.json()).then(data => {
       alert("Book is deleted successfully!") 
