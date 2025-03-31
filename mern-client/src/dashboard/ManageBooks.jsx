@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 const ManageBooks = () => {
   const [allBooks, setAllBooks] = useState([]);
   useEffect( () => {
-    fetch("api/all-books").then(res => res.json()).then(data => setAllBooks(data));
+    fetch("/api/all-books").then(res => res.json()).then(data => setAllBooks(data));
   }, [])
 
   // delete a book
