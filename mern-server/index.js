@@ -1,243 +1,186 @@
-const express = require('express')
-const app = express()
-const port = process.env.PORT || 5000;
-const SERVER_URL = "http://52.200.115.42:5000";
-
+require('dotenv').config();
+const express = require('express');
 const cors = require('cors');
-const stripe = require("stripe")('sk_test_51QBMSXBuaLd4buQ1B9RhgJ6xznN3qpwNLa8u6i45kOMpQF0xK33aNTsUv0SuHOQdegjh6hhwkjd27lPmivJVf4ON004HeEAvSm');
+const path = require('path');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
-// middleware
+const app = express();
+const port = process.env.PORT || 5000;
+const SERVER_URL = process.env.SERVER_URL || "http://localhost:5000";
+
+// Middleware
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'dist')));
 
-//ThgW0Ek4kJe1X5HS
-
-app.get('/', (req, res) => {
-  res.send('Hello World!')
-})
-
-
-// mongodb configuration
-
-
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-const uri = "mongodb+srv://mern-book-store:ThgW0Ek4kJe1X5HS@cluster0.6jpld.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// MongoDB Configuration
+const uri = process.env.MONGO_URI;
 const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  }
+  serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true }
 });
 
-async function run() {
+// Database Initialization
+async function initializeDB() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+    console.log("✅ MongoDB Connected!");
 
-    // create a collection of documents
-    const bookCollections = client.db("BookInventory").collection("books");
-    const cartCollections = client.db("BookInventory").collection("cart");
+    const db = client.db("BookInventory");
+    const bookCollections = db.collection("books");
+    const cartCollections = db.collection("cart");
+    const paymentCollections = db.collection("payments");
 
-    // Assuming you have a payments collection in the same database
-const paymentCollections = client.db("BookInventory").collection("payments");
+    // Home Route
+    app.get('/', (req, res) => res.send('Book Store API is running 🚀'));
 
-// Endpoint to save payment info
-app.post("/save-payment-info", async (req, res) => {
-    const paymentInfo = req.body;
-
-    try {
-        const result = await paymentCollections.insertOne(paymentInfo);
-        res.status(200).send({ message: 'Payment info saved successfully', id: result.insertedId });
-    } catch (error) {
-        console.error("Error saving payment info:", error);
-        res.status(500).send({ message: 'Failed to save payment info' });
-    }
-});
-
-
-// Endpoint to get payment info by email
-app.get("/payments", async (req, res) => {
-  const email = req.query.email; // get user email from query
-  try {
-    const payments = await paymentCollections.find({ email: email }).toArray();
-    res.status(200).send(payments);
-  } catch (error) {
-    console.error("Error fetching payment info:", error);
-    res.status(500).send({ message: 'Failed to fetch payment info' });
-  }
-});
-
-
-
-    // insert a book to the db: post method
-
-    app.post("/upload-book",async(req, res) => {
-        const data = req.body;
-        const result = await bookCollections.insertOne(data);
-        res.send(result);
-
-    })
-
-     // all cart operations
-
-    // Clear cart for a specific user
-app.delete('/clear-cart', async (req, res) => {
-  const email = req.body.email; // get user email from request body
-  const filter = { email: email };
-
-  try {
-      const result = await cartCollections.deleteMany(filter);
-      res.status(200).send({ message: 'Cart cleared successfully', deletedCount: result.deletedCount });
-  } catch (error) {
-      console.error("Error clearing cart:", error);
-      res.status(500).send({ message: 'Failed to clear cart' });
-  }
-}); 
-
-
-
-    //posting cart to db
-    app.post("/cart-option", async(req, res) => {
-      const cartItem = req.body;
-      const result = await cartCollections.insertOne(cartItem);
-      res.send(result);
-  })
-
-    //get carts using email
-    app.get("/cart-option", async(req, res) => {
-      const email = req.query.email;
-      const filter = {email: email};
-      const result = await cartCollections.find(filter).toArray();
-      res.send(result)
-  })
-
-   // get specific cart
-   app.get('/cart-option/:id', async(req, res) => {
-    const id = req.params.id;
-    const filter = {_id: new ObjectId(id)};
-    const result = await cartCollections.findOne(filter);
-    res.send(result)
-   })
-
-   // delete items from cart
-   app.delete('/cart-option/:id', async(req, res) => {
-    const id = req.params.id;
-    const filter = {_id: new ObjectId(id)};
-    const result = await cartCollections.deleteOne(filter);
-    res.send(result)
-   })
-
-   // update cart quantity
-   app.put('/cart-option/:id', async(req, res) => {
-    const id = req.params.id;
-    const {quantity} = req.body;
-    const filter = { _id: new ObjectId(id)};
-    const options = { upsert: true };
-
-    const updateDoc = {
-      $set: {
-        quantity: parseInt(quantity, 10)
-      },
-    };
-
-    const result = await cartCollections.updateOne(filter, updateDoc, options);
-   });
-
-
-   // stripe payment routes
-   // Create a PaymentIntent with the order amount and currency
-   app.post("/create-payment-intent", async (req, res) => {
-    const { totalPrice } = req.body;
-    const amount = totalPrice*100;
-  
-    // Create a PaymentIntent with the order amount and currency
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: amount,
-      currency: "usd",
-      
-      payment_method_types: ["card"],
-    });
-  
-    res.send({
-      clientSecret: paymentIntent.client_secret,
-    });
-  });
-
-
-
-
-    // get all books from database
-    //app.get("/all-books", async(req, res) => {
-        //const books = bookCollections.find();
-        //const result = await books.toArray();
-        //res.send(result);
-    //})
-
-
-    // update a book data : patch or update methods
-    app.patch("/book/:id", async(req, res) => {
-        const id = req.params.id;
-        // console.log(id);
-        const updateBookData = req.body;
-        const filter = {_id: new ObjectId(id)};
-        const options = { upsert: true };
-
-        const updateDoc = {
-            $set: {
-                ...updateBookData
-            }
-        }
-
-        // update
-        const result = await bookCollections.updateOne(filter, updateDoc, options );
-        res.send(result);
-    })
-
-    // delete a book data
-    app.delete("/book/:id", async(req, res) => {
-        const id = req.params.id;
-        const filter = {_id: new ObjectId(id)};
-        const result = await bookCollections.deleteOne(filter);
-        res.send(result);
-    })
-
-
-    // find by category
-    app.get("/all-books", async (req, res) => {
-      const { search } = req.query; // Get search query
-      let query = {};
-    
-      if (search) {
-        query.bookTitle = { $regex: search, $options: 'i' }; // Case-insensitive search
+    // 📌 Payments Routes
+    app.post("/save-payment-info", async (req, res) => {
+      try {
+        const result = await paymentCollections.insertOne(req.body);
+        res.status(200).send({ message: 'Payment saved!', id: result.insertedId });
+      } catch (error) {
+        res.status(500).send({ message: 'Error saving payment', error });
       }
-    
-      const result = await bookCollections.find(query).toArray(); // Query the database
-      res.send(result); // Send the result
     });
 
-    // to get single book data
+    app.get("/payments", async (req, res) => {
+      try {
+        const payments = await paymentCollections.find({ email: req.query.email }).toArray();
+        res.status(200).send(payments);
+      } catch (error) {
+        res.status(500).send({ message: 'Error fetching payments', error });
+      }
+    });
+
+    // 📌 Cart Routes
+    app.post("/cart-option", async (req, res) => {
+      try {
+        const result = await cartCollections.insertOne(req.body);
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Error adding to cart', error });
+      }
+    });
+
+    app.get("/cart-option", async (req, res) => {
+      try {
+        const result = await cartCollections.find({ email: req.query.email }).toArray();
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Error fetching cart', error });
+      }
+    });
+
+    app.delete('/cart-option/:id', async (req, res) => {
+      try {
+        const result = await cartCollections.deleteOne({ _id: new ObjectId(req.params.id) });
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Error deleting cart item', error });
+      }
+    });
+
+    app.put('/cart-option/:id', async (req, res) => {
+      try {
+        const result = await cartCollections.updateOne(
+          { _id: new ObjectId(req.params.id) },
+          { $set: { quantity: parseInt(req.body.quantity, 10) } }
+        );
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Error updating cart quantity', error });
+      }
+    });
+
+    // 📌 Books Routes
+    app.post("/upload-book", async (req, res) => {
+      try {
+        const result = await bookCollections.insertOne(req.body);
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Error uploading book', error });
+      }
+    });
+
+    app.get("/all-books", async (req, res) => {
+      try {
+        const query = req.query.search
+          ? { bookTitle: { $regex: req.query.search, $options: 'i' } }
+          : {};
+        const result = await bookCollections.find(query).toArray();
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Error fetching books', error });
+      }
+    });
+
     app.get("/book/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id)};
-      const result = await bookCollections.findOne(filter);
-      res.send(result);
-    })
+      try {
+        const result = await bookCollections.findOne({ _id: new ObjectId(req.params.id) });
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Error fetching book', error });
+      }
+    });
 
+    app.patch("/book/:id", async (req, res) => {
+      try {
+        const result = await bookCollections.updateOne(
+          { _id: new ObjectId(req.params.id) },
+          { $set: req.body }
+        );
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Error updating book', error });
+      }
+    });
 
-    // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } finally {
-    // Ensures that the client will close when you finish/error
-   // await client.close();
+    app.delete("/book/:id", async (req, res) => {
+      try {
+        const result = await bookCollections.deleteOne({ _id: new ObjectId(req.params.id) });
+        res.send(result);
+      } catch (error) {
+        res.status(500).send({ message: 'Error deleting book', error });
+      }
+    });
+
+    // 📌 Stripe Payment Route
+    app.post("/create-payment-intent", async (req, res) => {
+      try {
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: req.body.totalPrice * 100,
+          currency: "usd",
+          payment_method_types: ["card"],
+        });
+        res.send({ clientSecret: paymentIntent.client_secret });
+      } catch (error) {
+        res.status(500).send({ message: 'Error creating payment intent', error });
+      }
+    });
+
+    // 📌 Clear Cart Route
+    app.delete('/clear-cart', async (req, res) => {
+      try {
+        const result = await cartCollections.deleteMany({ email: req.body.email });
+        res.status(200).send({ message: 'Cart cleared', deletedCount: result.deletedCount });
+      } catch (error) {
+        res.status(500).send({ message: 'Error clearing cart', error });
+      }
+    });
+
+    // 📌 Serve Frontend (Vite React)
+    app.use(express.static(path.join(__dirname, 'dist')));
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+    });
+
+    // Start Server
+    app.listen(port, '0.0.0.0', () => console.log(`✅ Server running at ${SERVER_URL}:${port}`));
+  } catch (error) {
+    console.error("❌ MongoDB Connection Error:", error);
   }
 }
-run().catch(console.dir);
 
-
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Example app listening on port ${port}`)
-});
+// Run the database initialization
+initializeDB();
